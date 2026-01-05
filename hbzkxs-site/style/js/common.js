@@ -35,10 +35,10 @@ function CommentComplete(){}
     if (!ul) return;
 
     var items = [
-      { href: "/zhengche/", text: "整车线束" },
-      { href: "/weixian/", text: "尾线散件" },
-      { href: "/guigetu/", text: "规格图" },
-      { href: "/piliang/", text: "批量混合" },
+      { cat: "整车线束", text: "整车线束" },
+      { cat: "尾线散件", text: "尾线散件" },
+      { cat: "规格图", text: "规格图" },
+      { cat: "批量混合", text: "批量混合" },
     ];
 
     var currentPath = "";
@@ -46,13 +46,53 @@ function CommentComplete(){}
       currentPath = decodeURIComponent((new URL(window.location.href)).pathname || "");
     } catch (e) {}
 
+    function safeDecode(value) {
+      try {
+        return decodeURIComponent(value);
+      } catch (e) {
+        return value;
+      }
+    }
+
+    function readCategoryFromLocation() {
+      var rawHash = window.location.hash || "";
+      var hashIndex = rawHash.indexOf("cat=");
+      if (hashIndex !== -1) {
+        var hashValue = rawHash.slice(hashIndex + 4);
+        var hashAmp = hashValue.indexOf("&");
+        if (hashAmp !== -1) hashValue = hashValue.slice(0, hashAmp);
+        return safeDecode(hashValue);
+      }
+
+      var rawSearch = window.location.search || "";
+      var searchIndex = rawSearch.indexOf("cat=");
+      if (searchIndex !== -1) {
+        var searchValue = rawSearch.slice(searchIndex + 4);
+        var searchAmp = searchValue.indexOf("&");
+        if (searchAmp !== -1) searchValue = searchValue.slice(0, searchAmp);
+        return safeDecode(searchValue);
+      }
+
+      return "";
+    }
+
+    var activeCategory = readCategoryFromLocation();
+    if (!activeCategory) {
+      if (currentPath.indexOf("/zhengche/") !== -1) activeCategory = "整车线束";
+      else if (currentPath.indexOf("/weixian/") !== -1) activeCategory = "尾线散件";
+      else if (currentPath.indexOf("/guigetu/") !== -1) activeCategory = "规格图";
+      else if (currentPath.indexOf("/piliang/") !== -1) activeCategory = "批量混合";
+      else if (currentPath.indexOf("/xianshu/") !== -1) activeCategory = "整车线束";
+    }
+
     var html = "";
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
-      var active = currentPath.indexOf("/" + it.href.replace(/^\/+/, "")) !== -1;
+      var href = "/xianshu/index.html#cat=" + encodeURIComponent(it.cat);
+      var active = (activeCategory || "") === it.cat;
       html +=
         '<li><a href="' +
-        it.href +
+        href +
         '"' +
         (active ? ' class="hover"' : "") +
         ">" +
